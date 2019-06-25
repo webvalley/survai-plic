@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+{% load markdown sizify %}
+
+{% block extra-head %}
+    {# FontAwesome   #}
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css"
+          integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
+
+
+    <style type="text/css">
+        blockquote {
+            color: #666;
+            padding-left: 1.5em;
+            border-left: .5em #eee solid;
+
+        }
+
+        .superscript {
+            font-size: 10px;
+            vertical-align: super;
+        }
+    </style>
+{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'index' %}">Home Archive</a></li>
+    <li class="breadcrumb-item">
+            <a href="{% url reverse_view_name %}"
+               title="All {{ collection_name }}">{{ collection_name }}</a>
+    </li>
+    <li class="breadcrumb-item active">{{ paper.short_title|title }}</li>
+{% endblock %}
+
+{% block main_content %}
+    <div class="row text-justify">
+        <div class="col-sm-7">
+            <div class="mb-5" style="max-width: 70rem;">
+                <h4 class="display-5">
+                    {{ paper.resource_icon }}&nbsp;{{ paper.title }}
+                </h4>
+                <h5 class="display-6" style="font-style: italic; font-weight: lighter">
+                    {% for author_info in paper.authors_and_affiliations.0 %}
+                        {% if forloop.counter > 1 %}
+                            &comma; &nbsp;
+                        {% endif %}
+                        {{ author_info.author.name }}
+
+                        {% if not author_info.affiliations|length_is:"0" %}
+                            <span class="superscript">(
+                                {% for aff_counter in author_info.affiliations %}
+                                    {% if forloop.counter > 1 %}
+                                                      &comma; &nbsp;
+                                    {% endif %}
+                                    {{ aff_counter }}
+                                {% endfor %}
+                                                      )
+                            </span>
+                        {% endif %}
+                    {% endfor %}
+                </h5>
+                {% if not paper.authors_and_affiliations.1|length_is:"0" %}
+                    <h6 style="font-weight: lighter">
+                        {% for affiliation_name, counter in paper.authors_and_affiliations.1.items %}
+                            <span class="superscript">({{ counter }})</span>
+                            {{ affiliation_name|title }}
+                        {% endfor %}
+                    </h6>
+                {% endif %}
+                <div class="card-text">
+                    <h5 class="display-6">
+                        Abstract:
+                    </h5>
+
+                    {{ paper.abstract|show_markdown|safe }}
+                </div>
+                <br>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <ul class="list-group">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Pathology
+                    <div>
+                        <a href="{{ paper.pathology.get_absolute_url }}"
+                           title="{{ paper.pathology.name }}" target="_blank">
+                            {{ paper.pathology.badge }}
+                        </a>
+                        {% if paper.pathology.category %}
+                            <a href="{{ paper.pathology.get_category_absolute_url }}"
+                               title="{{ paper.pathology.category }}" target="_blank">
+                                {{ paper.pathology.badge_category }}
+                            </a>
+                        {% endif %}
+                    </div>
+                </li>
+            </ul>
+            <br>
+            <ul class="list-group">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Venue
+                    <span class="badge badge-secondary badge-pill">
+                        {{ paper.venue|title }}
+                        {% if paper.aggregation_type %}
+                            ({{ paper.aggregation_type }})
+                        {% endif %}
+                    </span>
+                </li>
+
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Year of Publication
+                    <span class="badge badge-primary badge-pill">{{ paper.year_of_publication }}</span>
+                </li>
+
+                {% if paper.paper_file %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Paper file:
+                    <span>
+                    <a href="{{ paper.paper_file.url }}" title="{{ paper.paper_file.name }}"
+                       target="_blank">
+                                Download
+                            </a>
+                        </span>
+                </li>
+                {% endif %}
+
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Paper URL:
+                    <a href="{{ paper.paper_url }}" title="{{ paper.short_title }}" target="_blank">
+                        {{ paper.short_title }} Page
+                    </a>
+                </li>
+
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Related Studies:
+                    <span class="badge badge-primary badge-pill">{{ paper.experimental_study.count }}</span>
+{#                    <a href="{{ dataset.web_url }}" title="{{ dataset.short_name }}" target="_blank">#}
+{#                        {{ dataset.short_name|upper }} Page#}
+{#                    </a>#}
+                </li>
+
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                    {% for tag in paper.terms.all %}
+                        <a href="{{ tag.get_absolute_url }}" title="{{ tag.name }}">
+                            {{ tag.badge|safe }}
+                        </a>
+                    {% endfor %}
+                    </div>
+                </li>
+            </ul>
+            <br>
+            <ul class="list-group">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <b>Publication Details:</b>
+                </li>
+                {% if paper.article_type %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Article
+                        <span class="badge badge-secondary badge-pill">{{ paper.article_type|title }}</span>
+                    </li>
+                {% endif %}
+                {% if paper.doi %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        doi: <span>{{ paper.doi }}</span>
+                    </li>
+                {% endif %}
+
+                {% if paper.issn %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        ISSN: <span>{{ paper.issn }}</span>
+                    </li>
+                {% endif %}
+
+                {% if paper.eid %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        EID: <span>{{ paper.eid }}</span>
+                    </li>
+                {% endif %}
+
+                {% if paper.pubmed_id %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        PubMed ID: <span>{{ paper.pubmed_id }}</span>
+                    </li>
+                {% endif %}
+
+                {% if paper.publication_date %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Publication Date: <span>{{ paper.publication_date }}</span>
+                    </li>
+                {% endif %}
+
+                {% if paper.page_range %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Pages: <span>{{ paper.range }}</span>
+                    </li>
+                {% endif %}
+
+                {% if paper.volume %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Volume: <span>{{ paper.volume }}</span>
+                    </li>
+                {% endif %}
+
+            </ul>
+{#                <li class="list-group-item d-flex justify-content-between align-items-center">#}
+{#                    Reference URL:#}
+{#                    <a href="{{ dataset.web_url }}" title="{{ dataset.short_name }}" target="_blank">#}
+{#                        {{ dataset.short_name|upper }} Page#}
+{#                    </a>#}
+{#                </li>#}
+{#                <li class="list-group-item d-flex justify-content-between align-items-center">#}
+{#                    {% for tag in dataset.tags.all %}#}
+{#                        <a href="{{ tag.get_absolute_url }}" title="{{ tag.name }}">#}
+{#                            {{ tag.badge|safe }}#}
+{#                        </a>#}
+{#                    {% endfor %}#}
+{#                </li>#}
+{#            </ul>#}
+        </div>
+    </div>
+
+
+{% endblock %}

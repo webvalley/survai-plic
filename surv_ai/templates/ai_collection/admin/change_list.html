@@ -1,0 +1,11 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls static admin_list %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <style type="text/css">
+        ul li {
+            list-style-type: circle !important;
+        }
+    </style>
+{% endblock %}

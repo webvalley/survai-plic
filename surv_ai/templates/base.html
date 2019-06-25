@@ -1,0 +1,156 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>
+        {% block head_title %}
+        {% endblock %}
+    </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{% static "css/bootstrap.min.css" %}">
+    <link rel="stylesheet" href="{% static "css/badges.min.css" %}">
+    {# FontAwesome #}
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css"
+          integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr"
+          crossorigin="anonymous">
+    {# JQuery #}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <style>
+        /* Remove the navbar's default margin-bottom and rounded borders */
+        {#nav {#}
+        {#    margin-bottom: 0;#}
+        {#    border-radius: 0;#}
+        {#}#}
+
+        body {
+            color: #353535;
+            font-size: 0.8em;
+        }
+        /* Remove the jumbotron's default bottom margin */
+        .jumbotron {
+            margin-bottom: 0.5rem !important;
+            padding-top: 5rem;
+        }
+
+        /* Add a gray background color and some padding to the footer */
+        footer {
+            background-color: #f2f2f2;
+            padding: 25px;
+        }
+
+
+        @media (min-width: 1200px) {
+            .lead {
+                font-size: 1.8rem;
+                padding-top: 8px;
+            }
+
+            .jumbotron {
+                padding-bottom: 0.8rem;
+            }
+
+            .container-fluid {
+                margin-left: 15px;
+            }
+
+            .display-4 {
+                font-size: 4rem;
+            }
+        }
+
+        @media (min-width: 1366px) {
+            .container-fluid {
+                width: 95%;
+            }
+        }
+
+        @media (min-width: 1199.98px) and (max-width: 1365px) {
+            .display-4 {
+                font-size: 3.5rem;
+            }
+
+
+        }
+
+        @media (min-width: 360px) and (max-width: 358px) {
+            .display-4 {
+                font-size: 2.5rem;
+            }
+
+            .jumbotron {
+                padding: 2rem 0.2rem 2rem 0.4rem;
+            }
+
+            .container-fluid {
+                width: 90%;
+            }
+        }
+
+        @media (max-width: 320px) {
+            .display-4 {
+                font-size: 1.5rem;
+            }
+
+            .lead {
+                font-size: 0.8rem;
+            }
+
+        }
+    </style>
+    {% block extra-head %}
+    {% endblock %}
+</head>
+<body>
+
+{# Main Header #}
+<div class="jumbotron">
+    <div style="float: right; max-width: 500px">
+        <img src="{% static "images/mpba_logo.png" %}" class="img-responsive, img-fluid"
+             style="width:40%" alt="MPBA Logo">
+        {% if index_alt_logo_path %}
+            <img src="{% static  index_alt_logo_path %}" class="img-responsive, img-fluid"
+                 style="width:40%" alt="{{ index_alt_logo_text }}">
+        {% endif %}
+    </div>
+    <h2 class="display-4">{{ index_title }}</h2>
+    <h4 class="lead">{{ index_subtitle }}</h4>
+    <hr class="my-4" style="padding-top: 6px;">
+
+</div>
+
+<nav class="">
+        <ol class="breadcrumb">
+            {% block breadcrumb %}
+                <li class="breadcrumb-item">Home Archive</li>
+                <li class="breadcrumb-item active">Collection</li>
+            {% endblock %}
+        </ol>
+    </nav>
+
+
+<div class="container-fluid bg-3">
+    {% block main_content %}
+
+    {% endblock %}
+</div>
+<br><br>
+<hr class="my-4">
+<footer class="container-fluid text-center">
+    <p class="">Copyright ©2018 All rights reserved |
+        <img src="{% static "images/mpba_logo.png" %}" class="img-responsive"
+             style="width:5%" alt="MPBA Logo">
+        {% if index_alt_logo_path %}
+            <img src="{% static  index_alt_logo_path %}" class="img-responsive, img-fluid"
+                 style="width:5%" alt="{{ index_alt_logo_text }}">
+        {% endif %}
+    </p>
+</footer>
+
+</body>
+
+</html>
+

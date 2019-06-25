@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+{% load markdown sizify %}
+
+{% block extra-head %}
+    {# FontAwesome   #}
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
+
+
+    <style type="text/css">
+        blockquote {
+            color: #666;
+            padding-left: 1.5em;
+            border-left: .5em #eee solid;
+
+        }
+
+        .superscript {
+            font-size: 10px;
+            vertical-align: super;
+        }
+    </style>
+{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'index' %}">Home Archive</a></li>
+    <li class="breadcrumb-item">
+            <a href="{% url reverse_view_name %}"
+               title="All {{ collection_name }}">{{ collection_name }}</a>
+    </li>
+    <li class="breadcrumb-item active">Study on {{ study.dataset.short_title|title }}</li>
+{% endblock %}
+
+{% block main_content %}
+    <div class="row text-justify">
+        <div class="col-sm-7">
+            <div class="mb-5" style="max-width: 70rem;">
+                <h4 class="display-5">
+                    {% if study.name %}
+                        Code name: <span>{{ study.name }}</span>
+                        <br>
+                    {% endif %}
+                    {{ study.resource_icon }}&nbsp;Model/Algorithm: {{ study.method.badge }}
+                </h4>
+                <br>
+
+                <div class="card-text">
+                    <h5 class="display-6">
+                        Paper Abstract:
+                    </h5>
+                    {{ study.paper.abstract|show_markdown|safe }}
+                </div>
+                <br><br>
+                <div class="card-text">
+                    <h5 class="display-6">
+                        Dataset Description:
+                    </h5>
+                    {{ study.dataset.description|show_markdown|safe }}
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <ul class="list-group">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Pathology
+                    <div>
+                        <a href="{{ study.pathology.get_absolute_url }}"
+                           title="{{ study.pathology.name }}" target="_blank">
+                            {{ study.pathology.badge }}
+                        </a>
+                        {% if study.pathology.category %}
+                            <a href="{{ study.pathology.get_category_absolute_url }}"
+                               title="{{ study.pathology.category }}" target="_blank">
+                                {{ study.pathology.badge_category }}
+                            </a>
+                        {% endif %}
+                    </div>
+                </li>
+            </ul>
+            <br>
+            <ul class="list-group">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Model/Algorithm
+                    {{ study.method.badge }}
+                </li>
+
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Dataset Reference:
+                    <a href="{{ study.dataset.get_absolute_url }}"
+                       title="{{ study.dataset.short_title }}" target="_blank">
+                        {{ study.dataset.short_title|upper }} Dataset
+                    </a>
+                </li>
+
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Paper Reference:
+                    <a href="{{ study.paper.get_absolute_url }}"
+                       title="{{ study.paper.short_title }}" target="_blank">
+                        <span> {{ study.paper.short_title }} - {{ study.paper.title }}</span>
+                    </a>
+                </li>
+
+            </ul>
+            <br>
+            <ul class="list-group">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <b>Dataset Information:</b>
+                </li>
+            
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Pathology
+                    <div>
+                        <a href="{{ study.dataset.pathology.get_absolute_url }}"
+                           title="{{ study.dataset.pathology.name }}" target="_blank">
+                            {{ study.dataset.pathology.badge }}
+                        </a>
+                        {% if study.dataset.pathology.category %}
+                            <a href="{{ study.dataset.pathology.get_category_absolute_url }}"
+                               title="{{ study.dataset.pathology.category }}" target="_blank">
+                                {{ study.dataset.pathology.badge_category }}
+                            </a>
+                        {% endif %}
+                    </div>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Patients in the Study
+                    <span class="badge badge-secondary badge-pill">
+                        {{ study.dataset.get_patients_in_study_display }}
+                    </span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Number of Patients
+                    <span class="badge badge-primary badge-pill">{{ study.dataset.n_patients }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Release Year
+                    <span class="badge badge-primary badge-pill">{{ study.dataset.release_year }}</span>
+                </li>
+
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Web URL:
+                    <a href="{{ study.dataset.web_url }}"
+                       title="{{ study.dataset.short_title }}" target="_blank">
+                        {{ study.dataset.short_title|upper }} Page
+                    </a>
+                </li>
+
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                    {% for tag in study.dataset.tags.all %}
+                        <a href="{{ tag.get_absolute_url }}" title="{{ tag.name }}">
+                            {{ tag.badge|safe }}
+                        </a>
+                    {% endfor %}
+                    </div>
+                </li>
+            </ul>
+            <ul class="list-group">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Available Data Archives
+                    <span class="badge badge-primary badge-pill">
+                        {{ study.dataset.data_archives.count }}</span>
+                </li>
+
+                {% for archive in study.dataset.data_archives.all %}
+                    <li class="list-group-item d-flex
+                                   justify-content-between align-items-center">
+
+                        <a href="{{ archive.archive_file.url }}" title="{{ archive.label }}"
+                        target="_blank">
+                            Download {{ archive.label }}
+                        </a>
+
+                    </li>
+                {% endfor %}
+            </ul>
+
+            <br>
+            <ul class="list-group">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <b>Paper Information:</b>
+                </li>
+
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Venue
+                    <span class="badge badge-secondary badge-pill">
+                        {{ study.paper.venue|title }}
+                        {% if study.paper.aggregation_type %}
+                            ({{ study.paper.aggregation_type }})
+                        {% endif %}
+                    </span>
+                </li>
+
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Year of Publication
+                    <span class="badge badge-primary badge-pill">{{ study.paper.year_of_publication }}</span>
+                </li>
+
+                {% if study.paper.paper_file %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Paper File:
+                        <span>
+                        <a href="{{ study.paper.paper_file.url }}" title="{{ study.paper.paper_file.name }}"
+                                target="_blank">
+                                    Download
+                                </a>
+                            </span>
+                    </li>
+                {% endif %}
+
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Paper URL:
+                    <a href="{{ study.paper.paper_url }}"
+                       title="{{ study.paper.short_title }}" target="_blank">
+                        {{ study.paper.short_title }} Page
+                    </a>
+                </li>
+
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                    {% for tag in study.paper.terms.all %}
+                        <a href="{{ tag.get_absolute_url }}" title="{{ tag.name }}">
+                            {{ tag.badge|safe }}
+                        </a>
+                    {% endfor %}
+                    </div>
+                </li>
+            </ul>
+{#                <li class="list-group-item d-flex justify-content-between align-items-center">#}
+{#                    Reference URL:#}
+{#                    <a href="{{ study.dataset.web_url }}" title="{{ study.dataset.short_name }}" target="_blank">#}
+{#                        {{ study.dataset.short_name|upper }} Page#}
+{#                    </a>#}
+{#                </li>#}
+{#                <li class="list-group-item d-flex justify-content-between align-items-center">#}
+{#                    {% for tag in study.dataset.tags.all %}#}
+{#                        <a href="{{ tag.get_absolute_url }}" title="{{ tag.name }}">#}
+{#                            {{ tag.badge|safe }}#}
+{#                        </a>#}
+{#                    {% endfor %}#}
+{#                </li>#}
+{#            </ul>#}
+        </div>
+    </div>
+
+
+{% endblock %}

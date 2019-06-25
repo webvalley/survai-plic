@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load markdown sizify %}
+
+{% block extra-css %}
+    {# FontAwesome   #}
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
+
+
+    <style type="text/css">
+        blockquote {
+            color: #666;
+            padding-left: 1.5em;
+            border-left: .5em #eee solid;
+
+        }
+    </style>
+{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'collections_list' %}">Collection</a></li>
+    <li class="breadcrumb-item active">{{ tag_name }}</li>
+{% endblock %}
+
+{% block main_content %}
+{% endblock %}

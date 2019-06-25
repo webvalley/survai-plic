@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% load markdown sizify utils %}
+
+{% block extra-head %}
+    {# FontAwesome   #}
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css"
+          integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
+
+
+    <style type="text/css">
+        blockquote {
+            color: #666;
+            padding-left: 1.5em;
+            border-left: .5em #eee solid;
+
+        }
+
+        p.pathology {
+            height: 1.2rem !important;
+        }
+
+        .resource_title {
+            text-align: left;
+            padding: 12px 12px;
+        }
+
+        .resource {
+            max-width: 35rem;
+        }
+
+        .tags{
+            min-height: 250px;
+        }
+
+        .card-title {
+            min-height: 96px;
+            text-align: left;
+        }
+
+        .card-text {
+            min-height: 266px;
+            text-align: justify;
+        }
+    </style>
+{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'index' %}">Home Archive</a></li>
+    <li class="breadcrumb-item">
+            <a href="{% url reverse_view_name %}" title="All {{ collection_name }}">{{ collection_name }}</a>
+    </li>
+    <li class="breadcrumb-item active">{{ tag_name|title }}</li>
+{% endblock %}
+
+{% block main_content %}
+
+    {#  Resources: dataset + paper  #}
+    {% for resource in resources %}
+        {% if forloop.counter|divisibleby:"4" or forloop.first %}
+            <div class="row">
+        {% endif %}
+        <div class="col-sm-3">
+            {% ifequal resource.resource_type 'paper' %}
+                <a name="{{ resource.resource_type }}-{{ forloop.counter|less:dataset_count }}"></a>
+            {% else %}
+                <a name="{{ resource.resource_type }}-{{ forloop.counter }}"></a>
+            {% endifequal %}
+            <div class="card {{ resource.border_css }} mb-3 resource">
+                <div class="card-header text-center">
+                    <span class="badge {{ resource.badge_css }}" style="float: right; position: relative;">
+                        {{ resource.resource_icon }}&nbsp;&nbsp;{{ resource.resource_type|title }}
+                        &sharp;
+                        {% ifequal resource.resource_type 'paper' %}
+                            {{ forloop.counter|less:dataset_count }}
+                        {% else %}
+                            {{ forloop.counter }}
+                        {% endifequal %}
+                        </span>
+                    <span class="resource_title">{{ resource.short_title|safe }}</span>
+                </div>
+                <div class="card-body">
+                    <h4 class="card-title">{{ resource.title|title|safe }}</h4>
+                    <div class="card-text">
+                        {{ resource.preview|show_markdown|safe|truncatewords:"100" }}
+                    </div>
+                    <br>
+                    <p class="pathology">
+                        <b>Pathology:</b>
+                        <a href="{{ resource.pathology.get_absolute_url }}"
+                           title="{{ resource.pathology.name }}">
+                            {{ resource.pathology.badge }}
+                        </a>
+                        {% if resource.pathology.category %}
+                            <a href="{{ resource.pathology.get_category_absolute_url }}"
+                               title="{{ resource.pathology.category }}">
+                                {{ resource.pathology.badge_category }}
+                            </a>
+                        {% endif %}
+                    </p>
+                    <p class="tags">
+                        {% for tag in resource.tags.all %}
+                            <a href="{% url 'tag_resources' name=tag.name %}"
+                               title="{{ tag.name }}">
+                                {{ tag.badge|safe }}
+                            </a>
+                        {% endfor %}
+                    </p>
+                    <a href="{{ resource.get_absolute_url }}"
+                       title="{{ resource.short_title }}">
+                        <button type="button" class="btn btn-primary">
+                            Read More
+                        </button>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        {% if forloop.counter == 3 or forloop.counter < 4 and forloop.last  %}
+
+            {% for i in 3|range:forloop.counter %}
+                 <div class="col-sm-3">
+                 </div>
+            {% endfor %}
+
+            <div class="col-sm-3">
+                <ul class="list-group">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Total Papers
+                        <span class="badge badge-primary badge-pill">{{ paper_count }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Total Datasets
+                        <span class="badge badge-primary badge-pill">{{ dataset_count }}</span>
+                    </li>
+                </ul>
+            </div>
+            </div>  {# end row #}
+        {% else %}
+            {% if forloop.last %}
+                </div>  {#  row #}
+            {% else %}
+                {% if forloop.counter > 3 %}
+                    {% if forloop.counter|less:3|divisibleby:"4" %}
+                        </div>  {#  row #}
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+        {% endif %}
+
+
+    {% empty %}
+        <div class="row">
+            <div class="col-sm-12">
+                <ul class="list-group">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Total Papers
+                        <span class="badge badge-primary badge-pill">{{ paper_count }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Total Datasets
+                        <span class="badge badge-primary badge-pill">{{ dataset_count }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    {% endfor %}
+
+{% endblock %}

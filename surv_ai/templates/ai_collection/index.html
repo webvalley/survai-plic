@@ -1,0 +1,536 @@
+{% extends "base.html" %}
+{% load markdown static %}
+
+{% block head_title %}
+    {{ index_title }}
+{% endblock %}
+
+{% block extra-head %}
+    <style type="text/css">
+        .counter {
+            font-weight: 100;
+            line-height: 1.2;
+            font-size: 30px;
+            text-align: center;
+        }
+
+        .card h3 {
+            font-weight: 300;
+            font-size: 2.2em;
+            line-height: 2;
+            text-align: center;
+        }
+
+        h5.card-text {
+            font-weight: normal;
+        }
+
+        li.list-group-item p {
+            height: 6rem;
+            vertical-align: middle;
+        }
+
+        .title {
+            font-size: 0.85rem;
+            font-weight: bolder;
+            display: block;
+            word-break: break-word;
+        }
+
+        .title-related {
+            font-size: 0.8rem;
+            font-weight: normal;
+            display: block;
+            word-break: break-word;
+        }
+
+        .short_title {
+            font-style: italic;
+            font-size: 0.75rem;
+            font-weight: normal;
+        }
+
+        .paper_venue {
+        }
+
+        p.tags {
+            height: 3rem !important;
+            padding-top: 1rem;
+        }
+
+        p.pathology {
+            height: 1.2rem !important;
+        }
+
+    </style>
+    <script type="text/javascript" src="{% static "js/jquery.countTo.js" %}"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#papers_count').countTo({
+                from: 0,
+                to: {{ papers_count }},
+                speed: 500,
+                refreshInterval: 50,
+            });
+
+            $('#datasets_count').countTo({
+                from: 0,
+                to: {{ datasets_count }},
+                speed: 500,
+                refreshInterval: 50,
+            });
+
+            $('#studies_count').countTo({
+                from: 0,
+                to: {{ studies_count }},
+                speed: 500,
+                refreshInterval: 50,
+            });
+
+            $('#pathologies_count').countTo({
+                from: 0,
+                to: {{ pathologies_count }},
+                speed: 500,
+                refreshInterval: 50,
+            });
+
+            $('#algorithms_count').countTo({
+                from: 0,
+                to: {{ algorithms_count }},
+                speed: 500,
+                refreshInterval: 50,
+            });
+
+            $('#tags_count').countTo({
+                from: 0,
+                to: {{ tags_count }},
+                speed: 500,
+                refreshInterval: 50,
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block main_content %}
+    <div class="row">
+        {#  ============================ #}
+        {#        Paper Section          #}
+        {#  ============================ #}
+        <div class="col-sm-4">
+            <div class="card mb-3 border-danger">
+                <h3 class="card-header">
+                    Paper{{ papers_count|pluralize }}
+                    (<span class="counter" id="papers_count"></span> total)
+                </h3>
+                <div class="card-body">
+                    <div class="card-body">
+                        <h5 class="card-text">
+                            Latest {{ latest_papers|length }}
+                            Paper{{ latest_papers|length|pluralize }} in
+                            Archive
+                        </h5>
+                    </div>
+                    <ol class="list-group list-group-flush">
+                        {% for paper in latest_papers %}
+                            <li class="list-group-item">
+                                <p>
+                                    <span class="title">
+                                        {{ paper.resource_icon }}&nbsp;&nbsp;
+                                        {{ paper.title }}
+                                    </span>
+                                    <span class="short_title">{{ paper.authors_short }}</span>
+                                    <span class="paper_venue"> <b>on</b> {{ paper.venue|title }}</span>
+                                </p>
+                                <p class="pathology">
+                                    <b>Pathology:</b>
+                                    <a href="{{ paper.pathology.get_absolute_url }}"
+                                       title="{{ paper.pathology.name }}">
+                                        {{ paper.pathology.badge }}
+                                    </a>
+                                    {% if paper.pathology.category %}
+                                        <a href="{{ paper.pathology.get_category_absolute_url }}"
+                                           title="{{ paper.pathology.category }}">
+                                            {{ paper.pathology.badge_category }}
+                                        </a>
+                                    {%  endif %}
+                                </p>
+{#                                <p class="tags">#}
+{#                                    <b>Terms:</b>#}
+{#                                    {% for tag in paper.most_popular_terms %}#}
+{#                                        <a href="{{ tag.get_absolute_url }}" title="{{ tag.name }}">#}
+{#                                            {{ tag.badge }}#}
+{#                                        </a>#}
+{#                                    {% endfor %}#}
+{#                                </p>#}
+                                <a href="{{ paper.get_absolute_url }}" title="{{ paper.title }}">
+                                    <button type="button" class="btn btn-primary btn-sm">
+                                        Read More
+                                    </button>
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ol>
+                    <div class="card-body">
+                        <a href="{% url "papers_all" %}" class="card-link">See all</a>
+                    </div>
+                    <div class="card-footer text-muted">
+                        Last Update: {{ latest_papers.0.last_change|date:"D M, d Y - H:i" }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {#  ============================ #}
+        {#        Dataset Section        #}
+        {#  ============================ #}
+        <div class="col-sm-4">
+            <div class="card mb-3 border-warning">
+                <h3 class="card-header">
+                    Dataset{{ datasets_count|pluralize }}
+                    (<span class="counter" id="datasets_count"></span> total)
+                </h3>
+                <div class="card-body">
+                    <div class="card-body">
+                        <h5 class="card-text">
+                            Latest {{ latest_datasets|length }}
+                            Dataset{{ latest_datasets|length|pluralize }} in
+                            Archive
+                        </h5>
+                    </div>
+                    <ol class="list-group list-group-flush">
+                        {% for dataset in latest_datasets %}
+                            <li class="list-group-item">
+                                <p>
+                                    <span class="title">
+                                    {{ dataset.resource_icon }}&nbsp;&nbsp;
+                                    {{ dataset.full_name }} ({{ dataset.short_name }})
+                                    </span>
+                                    {% if dataset.reference_paper %}
+                                        (Reference Paper)
+                                        <span class="title-related">
+                                            <i class="fas fa-file-contract"></i>&nbsp;&nbsp;
+                                            {{ dataset.reference_paper.title }}
+                                        </span>
+                                    {% endif %}
+                                </p>
+                                <p class="pathology">
+                                    <b>Pathology:</b>
+                                    <a href="{{ dataset.pathology.get_absolute_url }}"
+                                       title="{{ dataset.pathology.name }}">
+                                        {{ dataset.pathology.badge }}
+                                    </a>
+                                    {%  if dataset.pathology.category %}
+                                        <a href="{{ dataset.pathology.get_category_absolute_url }}"
+                                           title="{{ dataset.pathology.category }}">
+                                            {{ dataset.pathology.badge_category }}
+                                        </a>
+                                    {% endif %}
+                                </p>
+{#                                <p class="tags">#}
+{#                                    <b>Terms:</b>#}
+{#                                    {% for tag in dataset.most_popular_tags %}#}
+{#                                        <a href="{{ tag.get_absolute_url }}" title="{{ tag.name }}">#}
+{#                                            {{ tag.badge }}#}
+{#                                        </a>#}
+{#                                    {% endfor %}#}
+{#                                </p>#}
+                                <a href="{{ dataset.get_absolute_url }}"
+                                   title="{{ dataset.full_name }}">
+                                    <button type="button" class="btn btn-primary btn-sm">
+                                        Read More
+                                    </button>
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ol>
+                    <div class="card-body">
+                        <a href="{% url "datasets_all" %}" class="card-link">See all</a>
+                    </div>
+                    <div class="card-footer text-muted">
+                        Last Update: {{ latest_datasets.0.last_change|date:"D M, d Y - H:i" }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {#  ============================ #}
+        {#  Experimental Studies Section #}
+        {#  ============================ #}
+        <div class="col-sm-4">
+            <div class="card mb-3 border-dark">
+                <h3 class="card-header">
+                    Experimental Stud{{ studies_count|pluralize:"y,ies" }}
+                    (<span class="counter" id="studies_count"></span> total)
+                </h3>
+                <div class="card-body">
+                    <div class="card-body">
+                        <h5 class="card-text">
+                            Latest {{ latest_studies|length }}
+                            Experimental Stud{{ latest_studies|length|pluralize:"y,ies" }}
+                            in Archive
+                        </h5>
+                    </div>
+                    <ol class="list-group list-group-flush">
+                        {% for study in latest_studies %}
+                            <li class="list-group-item">
+                                <p>
+                                    <span class="title">
+                                        {{ study.resource_icon }}&nbsp;&nbsp;
+                                        <b>Model/Algorithm:</b>
+                                        <a href="{{ study.method.get_absolute_url }}"
+                                           title="{{ study.method.name }}">
+                                            {{ study.method.badge }}
+                                        </a>
+                                        &nbsp;
+                                        {% if study.name %}
+                                                                 Code name:
+                                            <span class="short_title">{{ study.name }}</span>
+                                        {% endif %}
+                                    </span>
+                                    <span class="title-related">
+                                        <i class="fas fa-file-contract"></i>&nbsp;&nbsp;
+                                        {{ study.paper.title }}
+                                    </span>
+                                    <span class="title-related">
+                                        <i class="fas fa-archive"></i>&nbsp;&nbsp;
+                                        {{ study.dataset.short_name }}
+                                    </span>
+                                </p>
+                                <p class="pathology">
+                                    <b>Pathology:</b>
+                                    <a href="{{ study.paper.pathology.get_absolute_url }}"
+                                       title="{{ study.paper.pathology.name }}">
+                                        {{ study.paper.pathology.badge }}
+                                    </a>
+                                    {% if study.pathology.category %}
+                                        <a href="{{ study.paper.pathology.get_category_absolute_url }}"
+                                           title="{{ study.paper.pathology.category }}">
+                                            {{ study.paper.pathology.badge_category }}
+                                        </a>
+                                    {% endif %}
+                                </p>
+{#                                <p class="tags">#}
+{#                                    <b>Terms:</b>#}
+{#                                    {% for tag in study.most_popular_terms %}#}
+{#                                        <a href="{{ tag.get_absolute_url }}" title="{{ tag.name }}">#}
+{#                                            {{ tag.badge }}#}
+{#                                        </a>#}
+{#                                    {% endfor %}#}
+{#                                </p>#}
+                                <a href="{{ study.get_absolute_url }}"
+                                   title="{{ study.full_name }}">
+                                    <button type="button" class="btn btn-primary btn-sm">
+                                        Read More
+                                    </button>
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ol>
+                    <div class="card-body">
+                        <a href="{% url "studies_all" %}" class="card-link">See all</a>
+                    </div>
+                    <div class="card-footer text-muted">
+                        Last Update: {{ latest_studies.0.last_change|date:"D M, d Y - H:i" }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {# -------------- #}
+    <div class="row">
+        {#  ============================ #}
+        {#       Pathologies Section     #}
+        {#  ============================ #}
+        <div class="col-sm-4">
+            <div class="card mb-3 border-info" style="height: 656px;">
+                <h3 class="card-header">
+                    Patholog{{ pathologies_count|pluralize:"y,ies" }}
+                    (<span class="counter" id="pathologies_count"></span> total)
+                </h3>
+                <div class="card-body" style="flex:none;">
+                    <h5 class="card-text">
+                        Top {{ top_pathologies|length }}
+                        Patholog{{ top_pathologies|length|pluralize:"y,ies" }}
+                        in Archive
+                    </h5>
+                </div>
+{#                <ol class="list-group">#}
+{#                    <li class="list-group-item">#}
+{#                        <a href="{% url "pathology_resources" name="FRONT-I" %}">#}
+{#                            <span class="badge badge-pill badge-light">Front of the Eye</span>#}
+{#                        </a>#}
+{#                    </li>#}
+{##}
+{#                    <li class="list-group-item">#}
+{#                        <a href="{% url "pathology_resources" name="BACK-I" %}">#}
+{#                            <span class="badge badge-pill badge-dark">Back of the Eye</span>#}
+{#                        </a>#}
+{#                    </li>#}
+{#                </ol>#}
+                <br><br>
+                <ol class="list-group">
+                    {% for pathology in top_pathologies %}
+                        <li class="list-group-item">
+                            <a href="{{ pathology.get_absolute_url }}" title="{{ pathology.name }}">
+                                {{ pathology.badge }}
+                            </a>
+                            <div style="display: inline; float:right;"
+                                 class="d-flex justify-content-between align-items-center">
+                                <b>Papers:</b>&nbsp;
+                                <span class="badge badge-secondary badge-pill">{{ pathology.papers.count }}</span>
+                                &nbsp;&nbsp;
+                                <b>Datasets:</b>
+                                &nbsp;
+                                <span class="badge badge-secondary badge-pill">{{ pathology.datasets.count }}</span>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ol>
+
+                <div class="card-body">
+                    <a href="{% url "pathologies_all" %}" class="card-link">See all</a>
+                </div>
+            </div>
+        </div>
+
+        {#  ============================ #}
+        {#       Algorithms Section      #}
+        {#  ============================ #}
+        <div class="col-sm-4">
+            <div class="card mb-3 border-success" style="height: 656px;">
+                <h3 class="card-header">
+                    Model{{ algorithms_count|pluralize }}
+                    (<span class="counter" id="algorithms_count"></span> total)
+                </h3>
+                <div class="card-body" style="flex:none;">
+                    <h5 class="card-text">
+                        Top {{ top_methods|length }}
+                        Model{{ top_methods|length|pluralize }}
+                        in Archive
+                    </h5>
+                </div>
+                <ol class="list-group">
+                    {% for method in top_methods %}
+                        <li class="list-group-item">
+                            <a href="{{ method.get_absolute_url }}" title="{{ method.name }}">
+                                {{ method.badge }}
+                            </a>
+                            <div style="display: inline; float:right;"
+                                 class="d-flex justify-content-between align-items-center">
+                                <b>Experimental Stud{{ method.studies.count|pluralize:"y,ies" }}:</b>&nbsp;
+                                <span class="badge badge-secondary badge-pill">{{ method.studies.count }}</span>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ol>
+
+                <div class="card-body">
+                    <a href="{% url "methods_all" %}" class="card-link">See all</a>
+                </div>
+            </div>
+        </div>
+
+        {#  ============================ #}
+        {#        Keywords Section       #}
+        {#  ============================ #}
+        <div class="col-sm-4">
+            <div class="card mb-3 border-primary">
+                <h3 class="card-header">
+                    Tag{{ tags_count|pluralize }}
+                    (<span class="counter" id="tags_count"></span> total)
+                </h3>
+                <div class="card-body">
+                    <h5 class="card-text">
+                        Top {{ top_tags_all|length }}
+                        Tag{{ top_tags_all|length|pluralize }}
+                        in Archive
+                    </h5>
+                </div>
+                <ol class="list-group">
+                    {% for tag in top_tags_all %}
+                        <li class="list-group-item">
+                            <a href="{{ tag.get_absolute_url }}" title="{{ tag.name }}">
+                                {{ tag.badge }}
+                            </a>
+                            <div style="display: inline; float:right;"
+                                 class="d-flex justify-content-between align-items-center">
+                                <b>Papers:</b>&nbsp;
+                                <span class="badge badge-secondary badge-pill">
+                                    {{ tag.papers.count }}</span>
+                                &nbsp; &nbsp;
+                                <b>Datasets:</b>
+                                &nbsp;
+                                <span class="badge badge-secondary badge-pill">{{ tag.datasets.count }}</span>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ol>
+
+                <div class="card-body">
+                    <h5 class="card-text">
+                        Top {{ top_tags_papers|length }}
+                        Tag{{ top_tags_papers|length|pluralize }}
+                        for Papers
+                    </h5>
+                </div>
+                <ol class="list-group">
+                    {% for tag in top_tags_papers %}
+                        <li class="list-group-item">
+                            <a href="{{ tag.get_absolute_url }}" title="{{ tag.name }}">
+                                {{ tag.badge }}
+                            </a>
+                            <div style="display: inline; float:right;"
+                                 class="d-flex justify-content-between align-items-center">
+                                <b>Papers:</b>&nbsp;
+                                <span class="badge badge-secondary badge-pill">{{ tag.papers.count }}</span>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ol>
+
+                <div class="card-body">
+                    <h5 class="card-text">
+                        Top {{ top_tags_datasets|length }}
+                        Tag{{ top_tags_datasets|length|pluralize }}
+                        for Datasets
+                    </h5>
+                </div>
+                <ol class="list-group">
+                    {% for tag in top_tags_datasets %}
+                        <li class="list-group-item">
+                            <a href="{{ tag.get_absolute_url }}" title="{{ tag.name }}">
+                                {{ tag.badge }}
+                            </a>
+                            <div style="display: inline; float:right;"
+                                 class="d-flex justify-content-between align-items-center">
+                                <b>Datasets:</b>
+                                &nbsp;
+                                <span class="badge badge-secondary badge-pill">
+                                    {{ tag.datasets.count }}
+                                </span>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ol>
+                <div class="card-body">
+                    <a href="{% url "tags_all" %}" class="card-link">See all</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    {#    <div class="card">#}
+    {#        <div class="card-body">#}
+    {#            <h4 class="card-title">Card title</h4>#}
+    {#            <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>#}
+    {#            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's#}
+    {#                content.</p>#}
+    {#            <a href="#" class="card-link">Card link</a>#}
+    {#            <a href="#" class="card-link">Another link</a>#}
+    {#        </div>#}
+    {#    </div>#}
+
+
+{% endblock %}
