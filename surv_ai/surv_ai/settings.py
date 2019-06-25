@@ -165,3 +165,7 @@ ADMIN_SITE_HEADER = 'SurvAI Repository Administration'
 ADMIN_INDEX_TITLE = 'SurvAI'
 ADMIN_SITE_TITLE = 'SurvAI'
 
+try:
+    from .local_settings import *
+except ImportError:
+    pass
