@@ -2,6 +2,8 @@
 {% load markdown %}
 {% load static %}
 
+{% block head_title %}{{collection_name|title}}{% endblock %}
+
 {% block extra-head %}
 
     <style type="text/css">
