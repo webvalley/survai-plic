@@ -52,10 +52,8 @@
 {% block main_content %}
 
     {#  Resources: dataset + paper  #}
+    <div class="row">
     {% for resource in resources %}
-        {% if forloop.counter|divisibleby:"4" or forloop.first %}
-            <div class="row">
-        {% endif %}
         <div class="col-sm-3">
             <a name="{{ resource.resource_type }}-{{ forloop.counter }}"></a>
             <div class="card {{ resource.border_css }} mb-3 resource">
@@ -104,27 +102,17 @@
             </div>
         </div>
 
-        {% if forloop.counter == 3 or forloop.counter < 4 and forloop.last  %}
-
-            {% for i in 3|range:forloop.counter %}
-                 <div class="col-sm-3">
-                 </div>
-            {% endfor %}
-
-            <div class="col-sm-3">
-                <ul class="list-group">
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        Total {{ collection_name|title }}
-                        <span class="badge badge-primary badge-pill">{{ resources.count }}</span>
-                    </li>
-                </ul>
-            </div>
-        </div>  {# end row #}
+        {% if forloop.counter == 3 %}
+        <div class="col-sm-3">
+          <ul class="list-group">
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              Total {{ collection_name|title }}
+              <span class="badge badge-primary badge-pill">{{ resources.count }}</span>
+            </li>
+          </ul>
+        </div>
         {% endif %}
 
-        {% if forloop.counter > 4 and forloop.counter|divisibleby:"4" or forloop.last %}
-            </div>  {#  row #}
-        {% endif %}
 
     {% empty %}
         <div class="row">
@@ -138,5 +126,6 @@
             </div>
         </div>
     {% endfor %}
+    </div>
 
 {% endblock %}
