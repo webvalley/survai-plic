@@ -62,21 +62,12 @@
             <div class="row">
         {% endif %}
         <div class="col-sm-3">
-            {% ifequal resource.resource_type 'paper' %}
-                <a name="{{ resource.resource_type }}-{{ forloop.counter|less:dataset_count }}"></a>
-            {% else %}
-                <a name="{{ resource.resource_type }}-{{ forloop.counter }}"></a>
-            {% endifequal %}
             <div class="card {{ resource.border_css }} mb-3 resource">
                 <div class="card-header text-center">
                     <span class="badge {{ resource.badge_css }}" style="float: right; position: relative;">
                         {{ resource.resource_icon }}&nbsp;&nbsp;{{ resource.resource_type|title }}
                         &sharp;
-                        {% ifequal resource.resource_type 'paper' %}
-                            {{ forloop.counter|less:dataset_count }}
-                        {% else %}
-                            {{ forloop.counter }}
-                        {% endifequal %}
+                        {{ forloop.counter }}
                         </span>
                     <span class="resource_title">{{ resource.short_title|safe }}</span>
                 </div>

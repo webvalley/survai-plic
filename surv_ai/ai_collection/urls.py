@@ -10,6 +10,8 @@ from .views import (papers_collection,
                     resources_per_pathology_category,
                     study_per_method, study_info,
                     index, studies_collection,
+                    topics_collection,
+                    paper_per_topic
                     )
 
 urlpatterns = [
@@ -52,5 +54,11 @@ urlpatterns = [
          name='method_studies'),
     path('methods/', methods_collection,
          name='methods_all'),  # use list with counters
+
+     #Topic
+    path('topics/<str:name>/', paper_per_topic,
+         name='topic_resources'),
+    path('topics/', topics_collection,
+         name='topics_all'),
 
 ]

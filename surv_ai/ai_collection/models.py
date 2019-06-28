@@ -113,6 +113,61 @@ class BadgeModel(models.Model):
     class Meta:
         abstract = True
 
+class Topic(BadgeModel):
+    """Topic"""
+
+    name = models.CharField(max_length=200, verbose_name='Topic',
+                            unique=True, primary_key=True,
+                            help_text='Note: The name of the Topic will be saved as lowercase to simplify research')
+
+    #category = models.ForeignKey(PathologyCategory, related_name='topics',
+    #                             blank=True, null=True, on_delete=models.SET_NULL)
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        self.name = self.name.lower()
+        super().save(force_insert, force_update, using, update_fields)
+
+    def __str__(self):
+        return self.name.title()
+
+    def __repr__(self):
+        return str(self)
+
+    def get_absolute_url(self):
+        return reverse('topic_resources', args=[str(self.name)])
+
+    def get_admin_url(self):
+        content_type = ContentType.objects.get_for_model(self.__class__)
+        return reverse("admin:%s_%s_change" % (content_type.app_label, content_type.model),
+                       args=(self.name,))
+
+    #def get_category_absolute_url(self):
+    #    if self.category:
+    #        return self.category.get_absolute_url()
+    #    return ''
+    
+    @property
+    def badge(self):
+        return _display_badge(self.badge_class, self.name.title())
+
+
+    #@property
+    #def badge_category(self):
+    #    if self.category:
+    #        return self.category.badge
+    #    return _display_badge('badge-dark', 'No Category')
+
+    @staticmethod
+    def badge_choices():
+        return BS_CLASSES
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = 'Topic'
+        verbose_name_plural = 'Topics'
+
+
 
 class Keyword(BadgeModel):
     """Paper Keyword"""
@@ -366,8 +421,11 @@ class Paper(models.Model):
     # Tag References
     terms = models.ManyToManyField(Keyword, related_name='papers', verbose_name='Keywords')
 
-    pathology = models.ForeignKey(Pathology, verbose_name='Pathology', null=True,
+    pathology = models.ForeignKey(Pathology, verbose_name='Pathology', null=True, blank=True,
                                   related_name='papers', on_delete=models.SET_NULL)
+    
+    #Topic
+    topic = models.ForeignKey(Topic, verbose_name='Topic',blank=True,null=True, related_name='papers', on_delete=models.SET_NULL)
 
     # Upload Statistics
     upload_date = models.DateField(editable=False, auto_now_add=True)
@@ -818,3 +876,4 @@ class ExperimentalStudy(models.Model):
         get_latest_by = ['-upload_change']
         verbose_name = 'Experimental Study'
         verbose_name_plural = 'Experimental Studies'
+
