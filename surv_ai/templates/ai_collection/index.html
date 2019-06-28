@@ -143,7 +143,7 @@
                                     <b>Pathology:</b>
                                     <a href="{{ paper.pathology.get_absolute_url }}"
                                        title="{{ paper.pathology.name }}">
-                                        {{ paper.pathology.badge }}
+                                        {{ paper.pathology.badge }} 
                                     </a>
                                     {% if paper.pathology.category %}
                                         <a href="{{ paper.pathology.get_category_absolute_url }}"
@@ -151,6 +151,13 @@
                                             {{ paper.pathology.badge_category }}
                                         </a>
                                     {%  endif %}
+                                </p>
+                                <p class="topic">
+                                    <b>Topic:</b>
+                                    <a {# href="{{ paper.topic.get_absolute_url }}" #}
+                                       title="{{ paper.topic.name }}">
+                                        {{ paper.topic.badge }} 
+                                    </a>
                                 </p>
 {#                                <p class="tags">#}
 {#                                    <b>Terms:</b>#}
@@ -517,18 +524,46 @@
             </div>
         </div>
     </div>
-
-
-    {#    <div class="card">#}
-    {#        <div class="card-body">#}
-    {#            <h4 class="card-title">Card title</h4>#}
-    {#            <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>#}
-    {#            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's#}
-    {#                content.</p>#}
-    {#            <a href="#" class="card-link">Card link</a>#}
-    {#            <a href="#" class="card-link">Another link</a>#}
-    {#        </div>#}
-    {#    </div>#}
+    <div class="row">
+        {#  ============================ #}
+        {#       Topics Section     #}
+        {#  ============================ #}
+        <div class="col-sm-4">
+            <div class="card mb-3 border-info" style="height: 656px;">
+                <h3 class="card-header">
+                    Topi{{ topics_count|pluralize:"c,cs" }}
+                    ({{topics_count}} total)
+                </h3>
+                <div class="card-body" style="flex:none;">
+                    <h5 class="card-text">
+                        Top {{ top_topics|length }}
+                        Topi{{ top_topics|length|pluralize:"c,cs" }}
+                        in Archive
+                    </h5>
+                </div>
+                <ol class="list-group">
+                        {% for tpc in top_topics %}
+                            <li class="list-group-item">
+                                <a href="{{ tpc.get_absolute_url }}" title="{{ tpc.name }}">
+                                    {{ tpc.badge }}
+                                </a>
+                                <div style="display: inline; float:right;"}
+                                     class="d-flex justify-content-between align-items-center">
+                                    <b>Papers:</b>&nbsp;
+                                    <span class="badge badge-secondary badge-pill">{{ tpc.papers.count }}</span>
+                                    &nbsp;&nbsp;   
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ol>
+                <br><br>
+                <div class="card-body">
+                    {# TODO: change 'pathologies_all' url  #}
+                    <a href="{% url "topics_all" %}" class="card-link">See all</a>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
 {% endblock %}

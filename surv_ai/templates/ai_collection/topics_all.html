@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load markdown %}
+{% load static %}
+
+{% block head_title %}{{collection_name|title}}{% endblock %}
+
+{% block extra-head %}
+
+    <style type="text/css">
+        blockquote {
+            color: #666;
+            padding-left: 1.5em;
+            border-left: .5em #eee solid;
+
+        }
+
+    </style>
+
+{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'index' %}">Home Archive</a></li>
+    <li class="breadcrumb-item active">{{ collection_name|title }}</li>
+{% endblock %}
+
+{% block main_content %}
+
+    <div class="row">
+        <h4>All {{ collection_name|title }} (in alphabetic order)</h4>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <ul class="list-group">
+                {% for tag in collection %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <a href="{{ tag.get_absolute_url }}"
+                           title="{{ tag.name }}">
+                            {{ tag.badge|safe }}
+                        </a>
+                        <div style="float:right; position: relative">
+                            <a href="{{ tag.get_absolute_url }}#paper-1" title="{{ tag.name }}-Papers">
+
+                                <span class="badge badge-danger">
+                                    <i class="fas fa-file-contract"></i>
+                                    Paper{{ tag.papers.count|pluralize }}
+                                    &nbsp;
+                                    {{ tag.papers.count  }}
+                                </span>
+
+                            </a>
+                        &nbsp;
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+
+        </div>
+    </div>
+
+
+{% endblock %}

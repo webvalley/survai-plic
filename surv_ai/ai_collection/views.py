@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.db.models import Count
 from itertools import chain
 from .models import Paper, Dataset, ExperimentalStudy
-from .models import Keyword, Method, Pathology
+from .models import Keyword, Method, Pathology, Topic
 
 
 def index(request):
@@ -12,13 +12,16 @@ def index(request):
     pathologies = Pathology.objects.all()
     studies = ExperimentalStudy.objects.all()
     tags = Keyword.objects.all()
+    topics = Topic.objects.all()
 
+    print(topics.count())
     context = {'papers_count': papers.count(),
                'datasets_count': datasets.count(),
                'studies_count': studies.count(),
                'algorithms_count': methods.count(),
                'pathologies_count': pathologies.count(),
-               'tags_count': tags.count()}
+               'tags_count': tags.count(),
+               'topics_count': topics.count()}
 
     # --- Top
     # Latest (top 5) Papers
@@ -27,11 +30,17 @@ def index(request):
     top_datasets = datasets.order_by('-upload_date')[:5]
     # latest (top 5) Experimental Studies
     top_studies = studies.order_by('-upload_date')[:5]
+    # latest (top 5) Topics
+    top_topics = topics.order_by('-upload_date')[:5]
 
     context.update({'latest_papers': top_papers,
                     'latest_datasets': top_datasets,
-                    'latest_studies': top_studies})
+                    'latest_studies': top_studies,
+                    'latest_topics': top_topics})
 
+    #---Topics
+    topic_stats = Topic.objects.all().annotate(np=Count('papers'))
+    top_topics2 = sorted(topic_stats, key=lambda topic: topic.np, reverse=True)[:10]
     # --- Pathologies
     p_stats = Pathology.objects.all().annotate(np=Count('papers'),
                                                nd=Count('datasets'))
@@ -54,6 +63,7 @@ def index(request):
 
     context.update({'top_pathologies': top_paths,
                     'top_methods': top_algos,
+                    'top_topics': top_topics2,
                     'top_tags_all': top_kw_abs,
                     'top_tags_papers': top_kw_papers,
                     'top_tags_datasets': top_kw_dsets})
@@ -215,3 +225,25 @@ def methods_collection(request):
     context = {'collection': methods,
                'collection_name': "Methods", }
     return render(request, 'ai_collection/tags.html', context)
+
+def topics_collection(request):
+    topics = Topic.objects.all()
+    context = {'collection': topics,
+               'collection_name': "Topics", }
+    return render(request, 'ai_collection/topics_all.html', context)
+
+def paper_per_topic(request,name):
+    topic = get_object_or_404(Topic, name=name)
+    papers_collection = topic.papers.all()
+    tag_name = topic.name
+
+    paper_count = papers_collection.count()
+    collection = list(papers_collection)
+    context = {'resources': collection,
+               'tag_name': tag_name,
+               'collection_name': "Topics",
+               'reverse_view_name': 'topics_all',
+               'paper_count': paper_count}
+
+    return render(request, 'ai_collection/paper_per_topic.html',
+                  context)

@@ -7,6 +7,7 @@ from .models import Dataset, DataArchive, Pathology, PathologyCategory
 from .models import ExperimentalStudy
 from .models import PATHOLOGY_CATEGORY_DEFAULT_DISPLAY
 from .models import _display_badge
+from .models import Topic
 
 from django.conf import settings
 
@@ -232,12 +233,12 @@ class PaperAdmin(admin.ModelAdmin):
     # ---------------
     change_list_template = 'ai_collection/admin/change_list.html'
     date_hierarchy = 'publication_date'
-    list_display = ('title', 'show_pathology', 'show_pathology_category', 'show_paper_file')
+    list_display = ('title', 'show_pathology', 'show_pathology_category','Topic','show_paper_file')
     list_display_links = ('title',)
-    list_filter = ('pathology__category', 'pathology', 'metadata_reference', 'terms')
+    list_filter = ('pathology__category', 'pathology', 'metadata_reference', 'terms','topic')
     list_select_related = ['pathology']
     search_fields = ('title', 'authors__name')
-    sortable_by = ['title', 'show_pathology', 'show_pathology_category']
+    sortable_by = ['title', 'show_pathology', 'show_pathology_category','Topic']
 
     # Add/Change view
     # ---------------
@@ -254,7 +255,7 @@ class PaperAdmin(admin.ModelAdmin):
         }),
 
         ('Pathology & Terms', {
-            'fields': ('pathology', 'terms'),
+            'fields': ('pathology', 'terms','topic'),
         }),
 
         ('Publication Info', {
@@ -277,7 +278,7 @@ class PaperAdmin(admin.ModelAdmin):
     formfield_overrides = {
         models.TextField: {'widget': AdminMarkdownxWidget},
     }
-    autocomplete_fields = ['terms', 'pathology', ]
+    autocomplete_fields = ['terms', 'pathology','topic' ]
 
     # ======================
     # Changelist View
@@ -295,6 +296,12 @@ class PaperAdmin(admin.ModelAdmin):
 
     show_paper_file.short_description = 'Paper File'
 
+    @mark_safe
+    def Topic(self,paper):
+        #return paper.topic.badge #_display_badge(paper.topic.badge_class,paper.topic.name.title())
+        if paper.topic:
+            return paper.topic.badge
+        return _display_badge(color_class='badge-secondary', text='No Topic')
     @mark_safe
     def show_terms(self, obj):
         terms = obj.terms.all()
@@ -444,7 +451,6 @@ class DataInlineAdmin(admin.StackedInline):
         }),
     )
 
-
 class ExperimentalStudyInlineAdmin(admin.StackedInline):
     model = ExperimentalStudy
     extra = 1
@@ -460,6 +466,68 @@ class ExperimentalStudyInlineAdmin(admin.StackedInline):
             'classes': ('collapse',)
         }),
     )
+
+class TopicAdmin(ResourceTagAdmin):
+    list_display = ['show_badge','show_papers']
+    list_display_links = ['show_badge']
+    #list_filter = ['category', ]
+    sortable_by = ['show_badge']
+    #autocomplete_fields = ['category']
+    fieldsets = (
+        (None, {
+            'fields': ('name', 'badge_class'),   #'category'
+            'classes': ('wide',),
+        }),
+    )
+
+   # @mark_safe
+   # def show_pathology_category(self, pathology):
+   #     return pathology.badge_category
+   # show_pathology_category.short_description = 'Pathology Category'
+   # show_pathology_category.admin_order_field = 'category'
+
+    @mark_safe
+    def show_papers(self, pathology):
+        papers = pathology.papers.order_by('-publication_date')
+        n_papers = papers.count()
+
+        tag = '''
+            <b>Total: </b> {count}
+            <br>
+            <ol>
+                {list_papers}
+            </ol>
+        '''
+        paper_entry = '<li><a href="{url}" title="{title}" target="_blank">{name}</a></li>'
+        list_papers = ' '.join([paper_entry.format(url=p.get_admin_url(), title=p.title,
+                                                   name='Paper: {n} ({y})'.format(y=p.year_of_publication,
+                                                                           n=p.smart_title)
+        )
+                                for p in papers])
+        return tag.format(count=n_papers,
+                          list_papers=list_papers)
+    show_papers.short_description = "Papers"
+
+    @mark_safe
+    def show_datasets(self, pathology):
+        datasets = pathology.datasets.order_by('-release_year')
+        n_datasets = datasets.count()
+        tag = '''
+                            <b>Total: </b> {count}
+                            <br>
+                            <ul>
+                                {list_datasets}
+                            </ul>
+                        '''
+        ds_entry = '<li><a href="{url}" title="{title}" target="_blank">{name}</a></li>'
+        list_datasets = ' '.join([ds_entry.format(url=d.get_admin_url(), title=d.full_name,
+                                                  name='Dataset {n} ({y})'.format(y=d.release_year,
+                                                                                  n=d.short_name))
+                                  for d in datasets])
+        return tag.format(count=n_datasets,
+                          list_datasets=list_datasets)
+
+    show_datasets.short_description = "Datasets"
 
 
 class DatasetAdmin(admin.ModelAdmin):
@@ -636,3 +704,6 @@ admin.site.register(Author, AuthorAdmin)
 
 # Dataset
 admin.site.register(Dataset, DatasetAdmin)
+
+#Topic
+admin.site.register(Topic, TopicAdmin)

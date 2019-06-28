@@ -95,6 +95,15 @@
                         {% endif %}
                     </div>
                 </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Topic
+                        <div>
+                            <a {# href="{{ paper.pathology.get_absolute_url }}" #}
+                               title="{{ paper.topic.name }}" target="_blank">
+                                {{ paper.topic.badge }}
+                            </a>
+                        </div>
+                    </li>
             </ul>
             <br>
             <ul class="list-group">
