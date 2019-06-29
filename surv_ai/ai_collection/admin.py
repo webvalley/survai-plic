@@ -19,6 +19,18 @@ from markdownx.widgets import AdminMarkdownxWidget
 from django.db import models
 from django.utils.html import mark_safe
 
+import requests
+from pprint import pprint
+from IPython.display import HTML
+subscription_key = "39e34da1cca34fa1a7b123c127993502"
+text_analytics_base_url = "https://westcentralus.api.cognitive.microsoft.com/text/analytics/v2.1/"
+keyphrase_url = text_analytics_base_url + "keyPhrases"
+
+
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.utils.translation import gettext_lazy as _
+
 
 class ResourceTagAdmin(admin.ModelAdmin):
     search_fields = ['name']
@@ -237,8 +249,8 @@ class PaperAdmin(admin.ModelAdmin):
     list_display_links = ('title',)
     list_filter = ('pathology__category', 'pathology', 'metadata_reference', 'terms','topic')
     list_select_related = ['pathology']
-    search_fields = ('title', 'authors__name')
-    sortable_by = ['title', 'show_pathology', 'show_pathology_category','Topic']
+    search_fields = ('title', 'authors__name') #'abstract', api_phrases
+    sortable_by = ['title', 'show_pathology', 'show_pathology_category','Topic'] #'abstract', api_phrases
 
     # Add/Change view
     # ---------------
@@ -302,6 +314,7 @@ class PaperAdmin(admin.ModelAdmin):
         if paper.topic:
             return paper.topic.badge
         return _display_badge(color_class='badge-secondary', text='No Topic')
+
     @mark_safe
     def show_terms(self, obj):
         terms = obj.terms.all()
@@ -351,6 +364,20 @@ class PaperAdmin(admin.ModelAdmin):
         return super().get_form(request, obj, **defaults)
 
     def save_form(self, request, form, change):
+        try:
+            if "abstract" in form.cleaned_data:
+                documents = {"documents" : [
+                  {"id": "1", "language": "en", "text": form.cleaned_data['abstract']},
+                ]}
+                headers   = {"Ocp-Apim-Subscription-Key": '39e34da1cca34fa1a7b123c127993502'} #subscription_key
+                response  = requests.post(keyphrase_url, headers=headers, json=documents)
+                key_phrases = response.json()
+                api_phrases=key_phrases['documents'][0]['keyPhrases']
+            # if 'pathology' in self.show_pathology.pathology is None and 'topic' in self.Topic.topic is None:
+            #     raise ValidationError(_('You must indicate the Pathology or the Topic'))
+        except Exception as e:
+            pass
+
         if not change:
             # this is the case of form add. So, go ahead with
             # Metadata download from engine

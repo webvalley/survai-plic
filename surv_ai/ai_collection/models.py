@@ -7,6 +7,19 @@ from markdownx.models import MarkdownxField
 from django_resumable.fields import ResumableFileField
 import os
 
+
+# from django.core.exceptions import ValidationError
+# from django.db import models
+# from django.utils.translation import gettext_lazy as _
+
+
+# import requests
+# from pprint import pprint
+# from IPython.display import HTML
+# subscription_key = "39e34da1cca34fa1a7b123c127993502"
+# text_analytics_base_url = "https://westcentralus.api.cognitive.microsoft.com/text/analytics/v2.1/"
+# keyphrase_url = text_analytics_base_url + "keyPhrases"
+
 # ========================
 # Papers Model Information
 # ========================
@@ -146,7 +159,7 @@ class Topic(BadgeModel):
     #    if self.category:
     #        return self.category.get_absolute_url()
     #    return ''
-    
+
     @property
     def badge(self):
         return _display_badge(self.badge_class, self.name.title())
@@ -423,13 +436,36 @@ class Paper(models.Model):
 
     pathology = models.ForeignKey(Pathology, verbose_name='Pathology', null=True, blank=True,
                                   related_name='papers', on_delete=models.SET_NULL)
-    
+
     #Topic
     topic = models.ForeignKey(Topic, verbose_name='Topic',blank=True,null=True, related_name='papers', on_delete=models.SET_NULL)
+
+
 
     # Upload Statistics
     upload_date = models.DateField(editable=False, auto_now_add=True)
     last_change = models.DateTimeField(editable=False, auto_now=True)
+
+    # def __init__(self, *args, **kwargs):
+    #     models.Model.__init__(self, *args, **kwargs)
+    #     documents = {"documents" : [
+    #       {"id": "1", "language": "en", "text": self.abstract},
+    #     ]}
+    #     print(documents)
+    #     headers   = {"Ocp-Apim-Subscription-Key": '39e34da1cca34fa1a7b123c127993502'} #subscription_key
+    #     response  = requests.post(keyphrase_url, headers=headers, json=documents)
+    #     key_phrases = response.json()
+    #     api_phrases=key_phrases['documents'][0]['keyPhrases']
+    #     pprint(key_phrases)
+
+
+
+    # def clean(self):
+    #     # Don't allow draft entries to have a pub_date.
+    #     if self.pathology is None and self.topic is None:
+    #         raise ValidationError(_('You must indicate the Pathology or the Topic'))
+
+
 
     @property
     def filename(self):
@@ -876,4 +912,3 @@ class ExperimentalStudy(models.Model):
         get_latest_by = ['-upload_change']
         verbose_name = 'Experimental Study'
         verbose_name_plural = 'Experimental Studies'
-
