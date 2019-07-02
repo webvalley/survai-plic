@@ -385,7 +385,7 @@ class Paper(models.Model):
         """
         pub_year = self.publication_date.year if self.publication_date else ''
         if self.authors_info:
-            author_surname = '_{}'.format(self.authors_info.first().author.name.title())
+            author_surname = '_{}'.format(self.authors_info.first().author.name.title().replace(' ', ''))
         else:
             author_surname = ''
         return '{y}{a}_{t}'.format(y=pub_year, a=author_surname, t=self.smart_title)
@@ -394,18 +394,12 @@ class Paper(models.Model):
     def smart_title(self):
         smart_title = ''
         if self.title:
+            smart_title = self.title
             # try to make it smart
-            if '\n' in self.title:
-                words_ret = smart_title.split('\n')
-                smart_title = words_ret[0].strip()
-            elif ':' in self.title:
-                words_col = smart_title.split(':')
-                smart_title = words_col[0].strip()
-            elif '(' in self.title:
-                words_p = smart_title.split('(')
-                smart_title = words_p[0].strip()
-            else:
-                smart_title = self.title
+            for sep in ('\n', ':', '(', '/', '\\'):
+                smart_title = smart_title.split(sep)[0]
+        if len(smart_title) > 120:
+            smart_title = smart_title[:120]
         return smart_title
 
     @property

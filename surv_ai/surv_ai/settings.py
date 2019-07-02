@@ -64,7 +64,6 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'surv_ai.context_processors.app_metadata',
-                'surv_ai.context_processors.site_title',
             ],
         },
     },
@@ -166,7 +165,3 @@ ADMIN_SITE_HEADER = 'SurvAI Repository Administration'
 ADMIN_INDEX_TITLE = 'SurvAI'
 ADMIN_SITE_TITLE = 'SurvAI'
 
-try:
-    from .local_settings import *
-except ImportError:
-    pass

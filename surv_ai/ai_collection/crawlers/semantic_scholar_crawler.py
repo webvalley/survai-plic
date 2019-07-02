@@ -58,7 +58,7 @@ class SemanticScholarCrawler(MetadataCrawler):
 
     def _get_by_semantic_scholar_id(self):
         """"""
-        paper_url = self.PAPERID_KEY.format(ID=self._id)
+        paper_url = self.PAPER_URL.format(ID=self._id)
         return requests.get(paper_url)
 
     def _fetch_metadata(self, article):
