@@ -1,4 +1,5 @@
 from django.urls import path
+
 from .views import (papers_collection,
                     dataset_collection,
                     tags_collection,

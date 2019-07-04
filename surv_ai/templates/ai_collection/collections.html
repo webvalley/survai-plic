@@ -53,6 +53,13 @@
 
 {% block main_content %}
 
+    {# Searchbar #}
+    <form type="get" action="." style="margin: 0">
+        <input  id="search_box" type="text" name="q"  placeholder="Search..." >
+        <button id="search_submit" type="submit" >Submit</button>
+    </form>
+    {# End Searchbar #}
+
     {#  Resources: dataset + paper  #}
     <div class="row">
     {% for resource in resources %}

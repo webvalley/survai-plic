@@ -72,15 +72,34 @@ def index(request):
 
 
 def papers_collection(request):
-    papers_collection = Paper.objects.all()
-    context = {'resources': papers_collection,
+    query = request.GET.get('q','')
+    if query == '':
+        result = Paper.objects.all()
+    else:
+        q1 = Paper.objects.filter(title__contains=query)
+        q2 = Paper.objects.filter(authors__name__contains=query)
+        q3 = Paper.objects.filter(azure_keys__name__contains=query)
+        q4 = Paper.objects.filter(terms__name__contains=query)
+        q5 = Paper.objects.filter(topic__name__contains=query)
+        result = set(list(chain(q1,q2,q3,q4,q5)))
+
+    context = {'resources': result,
                'collection_name': "Papers", }
     return render(request, 'ai_collection/collections.html', context)
 
 
 def dataset_collection(request):
-    dataset_collection = Dataset.objects.all()
-    context = {'resources': dataset_collection,
+    query = request.GET.get('q', '')
+    if query == '':
+        result = Dataset.objects.all()
+    else:
+        q1 = Dataset.objects.filter(full_name__contains=query)
+        q2 = Dataset.objects.filter(azure_keys__name__contains=query)
+        q3 = Dataset.objects.filter(tags__name__contains=query)
+        q4 = Dataset.objects.filter(short_name__contains=query)
+        result = set(list(chain(q1,q2, q3,q4)))
+
+    context = {'resources': result,
                'collection_name': "Datasets", }
     return render(request, 'ai_collection/collections.html', context)
 
@@ -198,10 +217,28 @@ def study_info(request, study_id):
 
 
 def studies_collection(request):
-    studies_collection = ExperimentalStudy.objects.all()
-    context = {'resources': studies_collection,
-               'collection_name': "Studies", }
+    query = request.GET.get('q', '')
+    if query == '':
+        result = ExperimentalStudy.objects.all()
+    else:
+        q1 = ExperimentalStudy.objects.filter(paper__title__contains=query)
+        q2 = ExperimentalStudy.objects.filter(dataset__full_name__contains=query)
+        q3 = ExperimentalStudy.objects.filter(method__name__contains=query)
+        q4 = ExperimentalStudy.objects.filter(name__contains=query)
+        result = set(list(chain(q1, q2, q3, q4)))
+
+    context = {'resources': result,
+               'collection_name': "ExperimentalStudy", }
     return render(request, 'ai_collection/collections.html', context)
+
+
+def dataset_info(request, short_name):
+    dataset = get_object_or_404(Dataset, short_name__iexact=short_name)
+    context = {'dataset': dataset,
+               'collection_name': "Datasets",
+               'reverse_view_name': 'datasets_all',
+               }
+    return render(request, 'ai_collection/dataset.html', context)
 
 
 # Resources Collection (Keyword, Pathologies, Methods)
