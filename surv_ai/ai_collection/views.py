@@ -81,7 +81,8 @@ def papers_collection(request):
         q3 = Paper.objects.filter(azure_keys__name__contains=query)
         q4 = Paper.objects.filter(terms__name__contains=query)
         q5 = Paper.objects.filter(topic__name__contains=query)
-        result = set(list(chain(q1,q2,q3,q4,q5)))
+        q6 = Paper.objects.filter(pathology__name__contains=query)
+        result = set(list(chain(q1,q2,q3,q4,q5,q6)))
 
     context = {'resources': result,
                'collection_name': "Papers", }
@@ -225,7 +226,8 @@ def studies_collection(request):
         q2 = ExperimentalStudy.objects.filter(dataset__full_name__contains=query)
         q3 = ExperimentalStudy.objects.filter(method__name__contains=query)
         q4 = ExperimentalStudy.objects.filter(name__contains=query)
-        result = set(list(chain(q1, q2, q3, q4)))
+        q5 = ExperimentalStudy.objects.filter(pathology__contains=query)
+        result = set(list(chain(q1, q2, q3, q4, q5)))
 
     context = {'resources': result,
                'collection_name': "ExperimentalStudy", }
