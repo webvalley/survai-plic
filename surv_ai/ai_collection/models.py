@@ -473,6 +473,8 @@ class Paper(models.Model):
         if self.title:
             if self.pathology is None and self.topic is None:
                 raise forms.ValidationError("You must indicate either the Pathology or the Topic")
+            if self.publication_date is None:
+                raise forms.ValidationError("You must specify the publication date!")
         return super().clean()
 
     @property
