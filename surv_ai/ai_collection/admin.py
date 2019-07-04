@@ -350,6 +350,8 @@ class PaperAdmin(admin.ModelAdmin):
             keys = get_azurekeys(form.instance.abstract)
             print(keys)
             for key in keys:
+                if len(key) >= 50:
+                    continue
                 key = key.lower()
                 if len(AzureKey.objects.filter(name=key)) == 0:     #If it does not exist
                     k = AzureKey.objects.create(name=key)
