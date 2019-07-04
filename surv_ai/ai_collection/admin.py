@@ -298,8 +298,8 @@ class PaperAdmin(admin.ModelAdmin):
     list_display_links = ('title',)
     list_filter = ('pathology__category', 'pathology', 'metadata_reference', 'terms','topic')
     list_select_related = ['pathology']
-    search_fields = ('title', 'authors__name')
-    sortable_by = ['title', 'show_pathology', 'show_pathology_category','Topic']
+    search_fields = ('title', 'authors__name','azure_keys__name','topic__name')
+    sortable_by = ['title', 'show_pathology', 'show_pathology_category']
 
     # Add/Change view
     # ---------------
@@ -340,6 +340,10 @@ class PaperAdmin(admin.ModelAdmin):
         models.TextField: {'widget': AdminMarkdownxWidget},
     }
     autocomplete_fields = ['terms', 'pathology','topic','azure_keys']
+
+    @mark_safe
+    def azure_keys_list(self,paper):
+        return [k.name for k in paper.azure_keys.all()]
 
     def save_related(self, request,form, formsets, change):
         super(PaperAdmin, self).save_related(request, form, formsets, change)
@@ -622,7 +626,7 @@ class DatasetAdmin(admin.ModelAdmin):
     inlines = [DataInlineAdmin, ExperimentalStudyInlineAdmin]
     list_filter = ['release_year', 'pathology__category', 'pathology', 'patients_in_study', 'tags', ]
     sortable_by = ['short_name', 'show_pathology', 'show_pathology_category', 'show_patients']
-    search_fields = ('short_name', 'full_name')
+    search_fields = ('short_name', 'full_name','azure_keys__name')
     autocomplete_fields = ['tags', 'pathology','azure_keys']
 
     fieldsets = (
@@ -661,6 +665,9 @@ class DatasetAdmin(admin.ModelAdmin):
     # ============================
     # ChangeList (Display) Methods
     # ============================
+
+    def azure_keys_list():
+        return [k.name for k in azure_keys.all()]
 
     def save_related(self, request, form, formsets, change):
         super(DatasetAdmin, self).save_related(request, form, formsets, change)
