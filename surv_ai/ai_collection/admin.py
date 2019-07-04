@@ -48,36 +48,63 @@ class ResourceTagAdmin(admin.ModelAdmin):
 
 class AzureKeyAdmin(admin.ModelAdmin):
 
-    list_display = ['name','show_papers']
+    change_list_template = 'ai_collection/admin/change_list.html'
+    list_display = ['name','show_papers', 'show_datasets']
     search_fields = ['name']
     actions = ['delete_unused']
 
     def delete_unused(modeladmin, request, queryset):
         for key in queryset.all():
-            if len(key.papers.all()) == 0:
+            if len(key.papers.all()) == 0 and len(key.datasets.all()) == 0:
                 key.delete()
-    delete_unused.short_description = 'Delete keywords with no paper'
+    delete_unused.short_description = 'Delete Azure Keyphrases with no paper nor dataset'
 
-    def show_papers(self, pathology):
-        papers = pathology.papers.order_by('-publication_date')
+    @mark_safe
+    def show_papers(self, azurekey):
+        #papers = azurekey.papers.order_by('-publication_date')
+        papers = azurekey.papers.all()
         n_papers = papers.count()
 
         tag = '''
-            <b>Total: </b> {count}
-            <br>
-            <ol>
-                {list_papers}
-            </ol>
-        '''
+                    <b>Total: </b> {count}
+                    <br>
+                    <ol>
+                        {list_papers}
+                    </ol>
+                '''
         paper_entry = '<li><a href="{url}" title="{title}" target="_blank">{name}</a></li>'
         list_papers = ' '.join([paper_entry.format(url=p.get_admin_url(), title=p.title,
-                                                   name='Paper: {n} ({y})'.format(y=p.year_of_publication,
-                                                                           n=p.smart_title)
-        )
+                                                   name='Paper: {n} ({y})'.format(y=p.publication_date.year,
+                                                                                  n=p.smart_title))
                                 for p in papers])
         return tag.format(count=n_papers,
                           list_papers=list_papers)
+
     show_papers.short_description = "Papers"
+
+    @mark_safe
+    def show_datasets(self, azurekey):
+        # papers = azurekey.papers.order_by('-publication_date')
+        datasets = azurekey.datasets.all()
+        n_datasets = datasets.count()
+
+        tag = '''
+                        <b>Total: </b> {d_count}
+                        <br>
+                        <ol>
+                            {list_datasets}
+                        </ol>
+                    '''
+        paper_entry = '<li><a href="{url}" title="{title}" target="_blank">{name}</a></li>'
+        list_datasets = ' '.join([paper_entry.format(url=p.get_admin_url(), title=p.short_name,
+                                                   name='Dataset: {n} '.format(
+                                                                                  n=p.short_name))
+                                for p in datasets])
+        return tag.format(d_count=n_datasets,
+                          list_datasets=list_datasets)
+
+    show_datasets.short_description = "Datasets"
+
 
 class MethodAdmin(ResourceTagAdmin):
     """Admin class for Method model instances"""
@@ -594,7 +621,7 @@ class DatasetAdmin(admin.ModelAdmin):
     list_filter = ['release_year', 'pathology__category', 'pathology', 'patients_in_study', 'tags', ]
     sortable_by = ['short_name', 'show_pathology', 'show_pathology_category', 'show_patients']
     search_fields = ('short_name', 'full_name')
-    autocomplete_fields = ['tags', 'pathology']
+    autocomplete_fields = ['tags', 'pathology','azure_keys']
 
     fieldsets = (
         (None, {
@@ -620,7 +647,7 @@ class DatasetAdmin(admin.ModelAdmin):
 
         }),
         ('Metadata', {
-            'fields': ('pathology', 'tags',),
+            'fields': ('pathology', 'tags','azure_keys','update_azure_keys'),
         }),
 
     )
@@ -632,6 +659,34 @@ class DatasetAdmin(admin.ModelAdmin):
     # ============================
     # ChangeList (Display) Methods
     # ============================
+
+    def save_related(self, request, form, formsets, change):
+        super(DatasetAdmin, self).save_related(request, form, formsets, change)
+        if not form.instance.update_azure_keys:
+            return
+        try:
+            form.instance.azure_keys.set(form.instance.reference_paper.azure_keys.all())
+        except Exception as e:
+            print(e)
+
+        #print(form.instance.azure_keys.all())
+        #try:
+        #    if not form.instance.update_azure_keys:
+        #        return
+        #    keys = get_azurekeys(form.instance.reference_paper.abstract)
+        #    print(keys)
+        #    for key in keys:
+        #        key = key.lower()
+        #        if len(AzureKey.objects.filter(name=key)) == 0:     #If it does not exist
+        #            k = AzureKey.objects.create(name=key)
+        #            k.save()
+        #            form.instance.azure_keys.add(k)
+        #        else:                                               #If it does exist
+        #            if len(form.instance.azure_keys.filter(name=key)) == 0:          #If it is not in the keys
+        #                k = AzureKey.objects.get(name=key)
+        #                form.instance.azure_keys.add(k)
+        #except Exception as e:
+        #    print(e)
 
     @mark_safe
     def show_attachments(self, obj):

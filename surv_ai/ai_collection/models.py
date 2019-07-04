@@ -431,7 +431,7 @@ class Paper(models.Model):
     volume = models.CharField(max_length=200, verbose_name='Volume', blank=True)
     eid = models.CharField(max_length=200, verbose_name='EID', blank=True)
     pubmed_id = models.CharField(max_length=200, verbose_name='PubMed ID', blank=True)
-    publication_date = models.DateField(verbose_name='Publication Date')
+    publication_date = models.DateField(verbose_name='Publication Date',blank=True,null=True)
 
     # ArXiv metadata (Optional)
     arxiv_id = models.CharField(max_length=200, verbose_name='ArXiv ID', blank=True, null=True)
@@ -701,6 +701,10 @@ class Dataset(models.Model):
     # Upload Statistics
     upload_date = models.DateField(editable=False, auto_now_add=True)
     last_change = models.DateTimeField(editable=False, auto_now=True)
+
+    #Azure keys
+    azure_keys = models.ManyToManyField(AzureKey, related_name='datasets', verbose_name='Azure Keys', blank=True)
+    update_azure_keys = models.BooleanField(default=True, verbose_name='Update Azure keys')
 
     def __str__(self):
         return self.short_name
