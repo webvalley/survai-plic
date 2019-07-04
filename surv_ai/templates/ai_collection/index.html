@@ -143,7 +143,7 @@
                                     <b>Pathology:</b>
                                     <a href="{{ paper.pathology.get_absolute_url }}"
                                        title="{{ paper.pathology.name }}">
-                                        {{ paper.pathology.badge }} 
+                                        {{ paper.pathology.badge }}
                                     </a>
                                     {% if paper.pathology.category %}
                                         <a href="{{ paper.pathology.get_category_absolute_url }}"
@@ -156,7 +156,7 @@
                                     <b>Topic:</b>
                                     <a {# href="{{ paper.topic.get_absolute_url }}" #}
                                        title="{{ paper.topic.name }}">
-                                        {{ paper.topic.badge }} 
+                                        {{ paper.topic.badge }}
                                     </a>
                                 </p>
 {#                                <p class="tags">#}
@@ -551,7 +551,7 @@
                                      class="d-flex justify-content-between align-items-center">
                                     <b>Papers:</b>&nbsp;
                                     <span class="badge badge-secondary badge-pill">{{ tpc.papers.count }}</span>
-                                    &nbsp;&nbsp;   
+                                    &nbsp;&nbsp;
                                 </div>
                             </li>
                         {% endfor %}
