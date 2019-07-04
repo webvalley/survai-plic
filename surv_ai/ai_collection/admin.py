@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .models import Paper, AuthorPaper
-from .models import Keyword, Method
+from .models import Keyword, Method, AzureKey
 from .models import Author
 from .models import Dataset, DataArchive, Pathology, PathologyCategory
 from .models import ExperimentalStudy
@@ -10,6 +10,7 @@ from .models import _display_badge
 from .models import Topic
 
 from django.conf import settings
+from ai_collection.azure_api import get_azurekeys
 
 from .forms import PaperCreationForm, PaperChangeForm
 from .forms import BadgeClassForm
@@ -44,6 +45,39 @@ class ResourceTagAdmin(admin.ModelAdmin):
         }
         js = ("js/badges.js",)
 
+
+class AzureKeyAdmin(admin.ModelAdmin):
+
+    list_display = ['name','show_papers']
+    search_fields = ['name']
+    actions = ['delete_unused']
+
+    def delete_unused(modeladmin, request, queryset):
+        for key in queryset.all():
+            if len(key.papers.all()) == 0:
+                key.delete()
+    delete_unused.short_description = 'Delete keywords with no paper'
+
+    def show_papers(self, pathology):
+        papers = pathology.papers.order_by('-publication_date')
+        n_papers = papers.count()
+
+        tag = '''
+            <b>Total: </b> {count}
+            <br>
+            <ol>
+                {list_papers}
+            </ol>
+        '''
+        paper_entry = '<li><a href="{url}" title="{title}" target="_blank">{name}</a></li>'
+        list_papers = ' '.join([paper_entry.format(url=p.get_admin_url(), title=p.title,
+                                                   name='Paper: {n} ({y})'.format(y=p.year_of_publication,
+                                                                           n=p.smart_title)
+        )
+                                for p in papers])
+        return tag.format(count=n_papers,
+                          list_papers=list_papers)
+    show_papers.short_description = "Papers"
 
 class MethodAdmin(ResourceTagAdmin):
     """Admin class for Method model instances"""
@@ -255,7 +289,7 @@ class PaperAdmin(admin.ModelAdmin):
         }),
 
         ('Pathology & Terms', {
-            'fields': ('pathology', 'terms','topic'),
+            'fields': ('pathology', 'terms','azure_keys','update_azure_keys','topic',),
         }),
 
         ('Publication Info', {
@@ -278,12 +312,29 @@ class PaperAdmin(admin.ModelAdmin):
     formfield_overrides = {
         models.TextField: {'widget': AdminMarkdownxWidget},
     }
-    autocomplete_fields = ['terms', 'pathology','topic' ]
+    autocomplete_fields = ['terms', 'pathology','topic','azure_keys']
 
-    # ======================
-    # Changelist View
-    # (List Display) Methods
-    # ======================
+    def save_related(self, request,form, formsets, change):
+        super(PaperAdmin, self).save_related(request, form, formsets, change)
+        print(form.instance.azure_keys.all())
+        try:
+            if not form.instance.update_azure_keys:
+                return
+            keys = get_azurekeys(form.instance.abstract)
+            print(keys)
+            for key in keys:
+                key = key.lower()
+                if len(AzureKey.objects.filter(name=key)) == 0:     #If it does not exist
+                    k = AzureKey.objects.create(name=key)
+                    k.save()
+                    form.instance.azure_keys.add(k)
+                else:                                               #If it does exist
+                    if len(form.instance.azure_keys.filter(name=key)) == 0:          #If it is not in the keys
+                        k = AzureKey.objects.get(name=key)
+                        form.instance.azure_keys.add(k)
+        except Exception as e:
+            print(e)
+
 
     @mark_safe
     def show_paper_file(self, obj):
@@ -302,6 +353,8 @@ class PaperAdmin(admin.ModelAdmin):
         if paper.topic:
             return paper.topic.badge
         return _display_badge(color_class='badge-secondary', text='No Topic')
+
+
     @mark_safe
     def show_terms(self, obj):
         terms = obj.terms.all()
@@ -707,3 +760,5 @@ admin.site.register(Dataset, DatasetAdmin)
 
 #Topic
 admin.site.register(Topic, TopicAdmin)
+
+admin.site.register(AzureKey, AzureKeyAdmin)

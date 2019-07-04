@@ -7,6 +7,11 @@ from markdownx.models import MarkdownxField
 from django_resumable.fields import ResumableFileField
 import os
 
+from  django.core.exceptions import ValidationError
+from django.db import models
+from django import forms
+from django.utils.translation import gettext_lazy as _
+
 # ========================
 # Papers Model Information
 # ========================
@@ -106,12 +111,35 @@ BS_CLASSES = (
 )
 
 
+
 class BadgeModel(models.Model):
     badge_class = models.CharField(verbose_name='Badge', choices=BS_CLASSES,
                                    default='', max_length=20)
 
     class Meta:
         abstract = True
+
+
+class AzureKey(models.Model):
+
+    name = models.CharField(max_length=50,verbose_name='Azure Keyphrases')
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        self.name = self.name.replace('/', ' ').lower()
+        super().save(force_insert, force_update, using, update_fields)
+
+    def __str__(self):
+        return self.name.title()
+
+    def __repr__(self):
+        return str(self)
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = 'Azure Keyphrase'
+        verbose_name_plural = 'Azure Keyphrases'
+
 
 class Topic(BadgeModel):
     """Topic"""
@@ -120,7 +148,7 @@ class Topic(BadgeModel):
                             unique=True, primary_key=True,
                             help_text='Note: The name of the Topic will be saved as lowercase to simplify research')
 
-    #category = models.ForeignKey(PathologyCategory, related_name='topics',
+    # category = models.ForeignKey(PathologyCategory, related_name='topics',
     #                             blank=True, null=True, on_delete=models.SET_NULL)
 
     def save(self, force_insert=False, force_update=False, using=None,
@@ -403,7 +431,7 @@ class Paper(models.Model):
     volume = models.CharField(max_length=200, verbose_name='Volume', blank=True)
     eid = models.CharField(max_length=200, verbose_name='EID', blank=True)
     pubmed_id = models.CharField(max_length=200, verbose_name='PubMed ID', blank=True)
-    publication_date = models.DateField(verbose_name='Publication Date', blank=True, null=True)
+    publication_date = models.DateField(verbose_name='Publication Date')
 
     # ArXiv metadata (Optional)
     arxiv_id = models.CharField(max_length=200, verbose_name='ArXiv ID', blank=True, null=True)
@@ -427,9 +455,25 @@ class Paper(models.Model):
     #Topic
     topic = models.ForeignKey(Topic, verbose_name='Topic',blank=True,null=True, related_name='papers', on_delete=models.SET_NULL)
 
+    azure_keys = models.ManyToManyField(AzureKey,related_name='papers',verbose_name='Azure Keys',blank=True)
+    update_azure_keys = models.BooleanField(default=True, verbose_name='Update Azure keys')
+
     # Upload Statistics
     upload_date = models.DateField(editable=False, auto_now_add=True)
     last_change = models.DateTimeField(editable=False, auto_now=True)
+
+    #def save(self):
+    #    if self.title is not None:
+    #        super().save()
+    #        if self.pathology is None and self.topic is None:
+    #            raise ValidationError(_('You must indicate the Pathology or the Topic'))
+
+    def clean(self):
+        # test the rate limit by passing in the cached user object  # use your throttling utility here7
+        if self.title:
+            if self.pathology is None and self.topic is None:
+                raise forms.ValidationError("You must indicate either the Pathology or the Topic")
+        return super().clean()
 
     @property
     def filename(self):
