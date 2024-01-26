@@ -9,7 +9,7 @@ django-markdownx==2.0.28
 elsapy==0.4.6
 feedparser==5.2.1
 idna==2.8
-ipython==7.16.3
+ipython==8.10.0
 ipython-genutils==0.2.0
 jedi==0.13.2
 Markdown==3.0.1
